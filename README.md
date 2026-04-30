@@ -29,6 +29,12 @@ envdiff .env.development .env.staging .env.production
 
 # Mask secret values in output
 envdiff .env.development .env.production --mask-secrets
+
+# Output results as JSON
+envdiff .env.development .env.production --format json
+
+# Exit with non-zero code if any diff is found (useful in CI)
+envdiff .env.development .env.production --strict
 ```
 
 **Example output:**
