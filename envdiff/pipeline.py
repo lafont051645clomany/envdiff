@@ -30,7 +30,15 @@ def process_diff(
 
     Returns:
         Processed DiffResult.
+
+    Raises:
+        ValueError: If fewer than two environments are provided.
     """
+    if len(envs) < 2:
+        raise ValueError(
+            f"At least two environments are required for a diff, got {len(envs)}."
+        )
+
     processed_envs = envs
     if mask_secrets:
         processed_envs = {
