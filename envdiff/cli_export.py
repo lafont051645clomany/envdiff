@@ -55,15 +55,35 @@ def add_export_subparser(subparsers: argparse._SubParsersAction) -> None:  # noq
     parser.set_defaults(func=run_export)
 
 
+def _validate_export_args(args: argparse.Namespace) -> Optional[int]:
+    """Validate export subcommand arguments.
+
+    Returns an exit code if validation fails, or ``None`` if all arguments
+    are valid and execution should proceed.
+    """
+    if len(args.envfiles) < 2:
+        print("error: at least two env files are required.", file=sys.stderr)
+        return 2
+
+    if args.output is not None and args.suggest_filename:
+        print(
+            "error: --output and --suggest-filename are mutually exclusive.",
+            file=sys.stderr,
+        )
+        return 2
+
+    return None
+
+
 def run_export(args: argparse.Namespace) -> int:
     """Execute the export subcommand. Returns an exit code."""
     if args.suggest_filename:
         print(suggest_filename("envdiff_report", args.fmt))
         return 0
 
-    if len(args.envfiles) < 2:
-        print("error: at least two env files are required.", file=sys.stderr)
-        return 2
+    exit_code = _validate_export_args(args)
+    if exit_code is not None:
+        return exit_code
 
     try:
         envs = load_env_files(args.envfiles)
