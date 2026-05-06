@@ -80,6 +80,13 @@ def test_merge_with_sources_value_correct(env_base, env_override):
     assert result["DB_HOST"]["value"] == "prod.db"
 
 
+def test_merge_with_sources_all_keys_present(env_base, env_override):
+    """Every key from every env should appear in the result."""
+    result = merge_with_sources([env_base, env_override], labels=["base", "override"])
+    expected_keys = collect_all_keys([env_base, env_override])
+    assert set(result.keys()) == expected_keys
+
+
 # ---------------------------------------------------------------------------
 # collect_all_keys
 # ---------------------------------------------------------------------------
@@ -89,5 +96,17 @@ def test_collect_all_keys_union(env_base, env_override):
     assert keys == {"DB_HOST", "DB_PORT", "APP_ENV", "SECRET_KEY"}
 
 
-def test_collect_all_keys_empty():
+def test_collect_all_keys_empty_list():
     assert collect_all_keys([]) == set()
+
+
+def test_collect_all_keys_single_env(env_base):
+    keys = collect_all_keys([env_base])
+    assert keys == set(env_base.keys())
+
+
+def test_collect_all_keys_overlapping_keys(env_base, env_override):
+    """Duplicate keys across envs should appear only once in the result."""
+    keys = collect_all_keys([env_base, env_override])
+    # DB_HOST appears in both; it should not be double-counted
+    assert len(keys) == len({"DB_HOST", "DB_PORT", "APP_ENV", "SECRET_KEY"})
