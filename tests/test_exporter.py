@@ -85,6 +85,15 @@ def test_export_markdown_no_diff_message(empty_diff):
     assert "No differences found" in result
 
 
+def test_export_markdown_contains_key_details(rich_diff):
+    """Ensure markdown output includes key names and environment details."""
+    result = export_diff(rich_diff, "markdown")
+    assert "DEBUG" in result
+    assert "production" in result
+    assert "DB_HOST" in result
+    assert "localhost" in result or "db.prod.example.com" in result
+
+
 def test_export_mask_secrets(rich_diff):
     result = export_diff(rich_diff, "json", mask_secrets=True)
     data = json.loads(result)
@@ -92,3 +101,9 @@ def test_export_mask_secrets(rich_diff):
     staging_missing = data["missing_in"].get("staging", {})
     if "SECRET_KEY" in staging_missing:
         assert staging_missing["SECRET_KEY"] == "****"
+
+
+def test_export_mask_secrets_csv(rich_diff):
+    """Ensure secret values are masked in CSV output when mask_secrets is enabled."""
+    result = export_diff(rich_diff, "csv", mask_secrets=True)
+    assert "abc123" not in result
