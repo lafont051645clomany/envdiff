@@ -56,6 +56,21 @@ def test_unified_diff_sorted_keys(env_a, env_b):
     assert keys == sorted(keys)
 
 
+def test_unified_diff_empty_envs():
+    """Both empty dicts should produce only header lines and no key lines."""
+    lines = build_unified_diff({}, {}, label_a="a", label_b="b")
+    assert lines[0] == "--- a"
+    assert lines[1] == "+++ b"
+    assert len(lines) == 2
+
+
+def test_unified_diff_one_empty(env_a):
+    """Diffing against an empty env should mark all keys as removed."""
+    lines = build_unified_diff(env_a, {})
+    content_lines = [l for l in lines if l.startswith("-") or l.startswith("+")]
+    assert all(l.startswith("-") for l in content_lines)
+
+
 def test_classify_keys_added(env_a, env_b):
     result = classify_keys(env_a, env_b)
     assert result["HOST"] == DIFF_ADDED
